@@ -160,7 +160,6 @@ class QuartoQuintCircle:
 
                 return cur
 
-    # tonality = list(tonica, lad)
     def get_relatives(self, tonality: Tonality):
         if tonality.lad == const.Major:
             pos = self.major.find_tonality(tonality)
@@ -172,7 +171,11 @@ class QuartoQuintCircle:
             t4 = Tonality(const.Major, pos.prev.data)  # левый сосед (тоже мажор)
             t5 = Tonality(const.Minor, pos.prev.parallel.data)  # параллельная тональность левого соседа (минор)
 
-            return list([t0, t1, t2, t3, t4, t5])
+            t = self.get_tonality_by_offset(tonality, -5)
+            t6 = Tonality(const.Major, t.data)
+            t7 = Tonality(const.Minor, t.parallel.data)
+
+            return list([t0, t1, t2, t3, t4, t5, t6, t7])
 
         else:
             pos = self.minor.find_tonality(tonality)
@@ -184,4 +187,8 @@ class QuartoQuintCircle:
             t4 = Tonality(const.Minor, pos.prev.data)  # левый сосед (тоже минор)
             t5 = Tonality(const.Major, pos.prev.parallel.data)  # параллельная тональность левого соседа (мажор)
 
-            return list([t0, t1, t2, t3, t4, t5])
+            t = self.get_tonality_by_offset(tonality, -5)
+            t6 = Tonality(const.Minor, t.data)
+            t7 = Tonality(const.Major, t.parallel.data)
+
+            return list([t0, t1, t2, t3, t4, t5, t6, t7])

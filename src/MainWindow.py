@@ -83,7 +83,7 @@ class MainWindow:
             generated_fragment = generate_music_fragment(Tonality(lad, tonica))
 
             self.file = MidiFile(const.DefaultMidiFile)
-            self.file.add_track(generated_fragment)
+            self.file.add_track_with_durations(generated_fragment, const.DefaultTempo)
             self.file.save_midi_file()
         else:
             showerror(title="Ошибка", message="Сначала пройдите тест Люшера!")
@@ -92,10 +92,13 @@ class MainWindow:
         self.file.play()
 
     def download_generated_fragment(self):
-        directory = fd.askdirectory(title="Открыть папку", initialdir="/")
+        directory = fd.asksaveasfilename(title="Открыть папку", initialdir="/")
 
         if directory:
-            self.file.download_midi_file(directory + "/" + const.DefaultMidiFile)
+            if ".mid" in directory.lower() or ".midi" in directory.lower():
+                self.file.download_midi_file(directory)
+            else:
+                self.file.download_midi_file(directory + ".mid")
 
     @staticmethod
     def show_info():

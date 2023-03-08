@@ -1,4 +1,5 @@
 import os
+import random
 from collections import Counter
 
 import numpy as np
@@ -44,7 +45,8 @@ def handle_generation(start_note: str, tonality_gamma: list, data: list = bigram
 # tonality = list(tonica, lad, gamma)
 def generate_music_fragment(tonality: Tonality, data: list = bigrams, length: int = 100):
     start_note = np.random.choice(tonality.linked_list_to_list(),
-                                  p=list([1 / len(tonality.linked_list_to_list()) for i in range(len(tonality.linked_list_to_list()))])) + '4'
+                                  p=list([1 / len(tonality.linked_list_to_list()) for i in range(len(tonality.linked_list_to_list()))])) + str(random.randint(1, 7))
+
     generated_fragment = []
     tonality_cur = tonality
 
@@ -54,19 +56,72 @@ def generate_music_fragment(tonality: Tonality, data: list = bigrams, length: in
     tonality_options = quint_circle.get_relatives(tonality_cur)
     suitable_data = get_suitable_tonality_data(tonality_cur)
     tonality_probabilities = list(
-        [0.5] + [(1 - 0.5) / (len(tonality_options) - 1) for i in range(len(tonality_options) - 1)])
-    print(tonality_probabilities)
+        [const.ProbabilityCurTonality] + [(1 - const.ProbabilityCurTonality) / (len(tonality_options) - 1) for i in range(len(tonality_options) - 1)])
 
-    for n in range(length):
+    bars_cnt = 0
+
+    for b in range(const.BarsToGenerate):
+
+        if bars_cnt >= const.BarsInTonality:
+            new_tonality = np.random.choice(tonality_options, p=tonality_probabilities)
+            if new_tonality != tonality_cur:
+                bars_cnt = 0
+                tonality_cur = new_tonality
+                suitable_data = get_suitable_tonality_data(tonality_cur)
+
+        print("CUR TONALITY - " + tonality_cur.tonica + tonality_cur.lad)
+
+        bar_duration = const.TimeSignature[0] * 1 / const.TimeSignature[1]
+        beat_duration = 1 / const.TimeSignature[1]
+
+        notes_durations = get_bar_content(bar_duration, beat_duration)
+
+        for dur in notes_durations:
+            note = predict_next_state(start_note, suitable_data)
+            generated_fragment.append([note, dur])
+            start_note = generated_fragment[-1][0]
+
+        bars_cnt += 1
+
+    '''
+        for n in range(length):
         if n > 20 and n % 10 == 0 and np.random.choice([True, False], p=[0.8, 0.2]):
             tonality_cur = np.random.choice(tonality_options, p=tonality_probabilities)
             suitable_data = get_suitable_tonality_data(tonality_cur)
 
         print("CUR TONALITY - " + tonality_cur.tonica + tonality_cur.lad)
         generated_fragment.append((predict_next_state(start_note, suitable_data)))
-        start_note = generated_fragment[-1]
+        start_note = generated_fragment[-1]'''
 
     return generated_fragment
+
+
+def find_combinations(bar_length, beats_durations, res, lastindex=0, lst=[]):
+    if bar_length == 0:
+        res.append(lst)
+    else:
+        for i in range(lastindex, len(beats_durations)):
+            if beats_durations[i] <= bar_length:
+                find_combinations(bar_length - beats_durations[i], beats_durations, res, i, lst + [beats_durations[i]])
+
+def get_bar_content(bar_duration: float, beat_duration: float):
+    lst = []
+    for d in const.NotesDurations:
+        if d <= beat_duration:
+            lst.append(d)
+
+    combinations = []
+    find_combinations(bar_duration, lst, combinations)
+    indexes = [i for i in range(len(combinations))]
+
+    # todo: вероятность получить комбинацию с 16 нотой должна быть оч маленькая
+    # у меня почти везде получаются 16-е (если текущие длительности), надо тоже тут вероятность подкрутить
+    # точнее выходят самые маленькие ноты по длительности - надо пофиксить
+    res = combinations[np.random.choice(indexes)]
+    random.shuffle(res)
+
+    return res
+
 
 
 def get_suitable_tonality_data(tonality: Tonality, data: list = bigrams):

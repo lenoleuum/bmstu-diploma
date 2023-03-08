@@ -1,4 +1,5 @@
 import math
+import random
 
 import mido
 import Constants as const
@@ -10,12 +11,15 @@ class MidiFileMeta:
         self.path = file_path
         self.sf2_path = const.SF2Path
 
+
 # todo: разобраться с этим
 class MidiFile:
     def __init__(self, file_path):
         self.meta = MidiFileMeta(file_path)
         self.file = mido.MidiFile()
-        #self.file.type = 0
+        #self.file = mido.MidiFile(ticks_per_beat=const.TicksPerBeat, type=0) #type 0 (single track): all messages are saved in one track
+        #self.file = mido.MidiFile(ticks_per_beat=120, type=0) #type 0 (single track): all messages are saved in one track
+        # self.file.type = 0
 
     # channel=0 - перкуссия, а все остальные - фортепиано
     @staticmethod
@@ -60,14 +64,55 @@ class MidiFile:
     def get_frequency(note):
         return math.pow(2, (int(note) - 69) / 12) * const.A4
 
-    def add_track(self, notes):
+    @staticmethod
+    def bpm_to_time(bpm: int):
+        return int(1000000 * 60 / bpm)
+
+    @staticmethod
+    def get_beat_length():
+        denominator = const.TimeSignature[1]
+        ticks_per_quarter_note = 1 / denominator  # длина тактовой доли
+
+        return 4 * ticks_per_quarter_note / denominator
+
+    # длина такта
+    def get_bar_length(self):
+        return const.TimeSignature[0] * self.get_beat_length()
+
+    def beat_to_tick(self, dur):
+        return int(dur * self.file.ticks_per_beat)
+
+    def tick_to_beat(self, tick):
+        return tick / self.file.ticks_per_beat
+
+    def add_track(self, notes: list, bpm: int = 120):
         track = mido.MidiTrack()
+
+        track.append(mido.MetaMessage('set_tempo', tempo=self.bpm_to_time(bpm), time=0))
+        #track.append(mido.MetaMessage('time_signature', numerator=4, denominator=4, clocks_per_click=24, notated_32nd_notes_per_beat=8))
+
         track.append(mido.Message('program_change', program=12, time=0))
 
         for n in notes:
             note = self.convert_note(n)
             self.note_on(track, note)
             self.note_off(track, note)
+
+        self.file.tracks.append(track)
+
+    def add_track_with_durations(self, notes: list, bpm: int = 120):
+        track = mido.MidiTrack()
+
+        track.append(mido.MetaMessage('set_tempo', tempo=self.bpm_to_time(bpm), time=0))
+        track.append(mido.MetaMessage('time_signature', numerator=const.TimeSignature[0], denominator=const.TimeSignature[1], clocks_per_click=24, notated_32nd_notes_per_beat=8))
+
+        track.append(mido.Message('program_change', program=12, time=0))
+
+        for n in notes:
+            note = self.convert_note(n[0])
+            self.note_on(track, note, time=0)
+            self.note_off(track, note, time=self.beat_to_tick(n[1]))
+            print(n, self.beat_to_tick(n[1]))
 
         self.file.tracks.append(track)
 
@@ -88,7 +133,7 @@ class MidiFile:
         notes = [[] for i in range(16)]
 
         for track in self.file.tracks:
-            for msg in track:#sorted(track, key=lambda s: s.time):
+            for msg in track:  # sorted(track, key=lambda s: s.time):
                 if msg.type in ['note_on', 'note_off']:
                     notes[msg.channel].append(msg.note)
 
@@ -106,12 +151,18 @@ class MidiFile:
         self.file = mido.MidiFile(self.meta.path)
         notes = [[] for i in range(16)]
 
+        cnt = 0
+
         for track in self.file.tracks:
-            for msg in track:#sorted(track, key=lambda s: s.time):
-                if msg.type in ['note_on', 'note_off']:
+            for msg in track:  # sorted(track, key=lambda s: s.time):
+                cnt += msg.time
+                if msg.type in ['note_on', 'note_off']:# and msg.channel == 13:
                     notes[msg.channel].append(msg.note)
                     print(msg)
+                if msg.type == "time_signature":
+                    print(msg)
 
+        print(cnt)
         bigram_notes = []
 
         for n in notes:
@@ -122,7 +173,23 @@ class MidiFile:
 
         return bigram_notes
 
-# kuznechik.mid CrazyFrog.mid Fur Elise.mid rasputin.mid
-m = MidiFile("C:\\Users\\admin\\Desktop\\newlife\\8 semester\\в последний путь\\midi\\kuznechik.mid")
-print(m.file.length)
-#m.play()
+
+# kuznechik.mid CrazyFrog.mid Fur Elise.mid chop suey.mid Hans Zimmer - At World's End Howl - Merry-Go-Round of Life
+#m = MidiFile("C:\\Users\\admin\\Desktop\\newlife\\8 semester\\в последний путь\\midi\\Howl - Merry-Go-Round of Life.mid")
+#m = MidiFile("result.mid")
+#m.parse_with_time()
+#print(m.file.ticks_per_beat)
+
+#print(4 * m.file.ticks_per_beat / 8)
+# m.play()
+'''print(m.get_bar_length())
+print(m.get_beat_length())
+print(100/m.get_bar_length())'''
+'''
+print(m.bpm_to_time(120))
+print(mido.bpm2tempo(120))
+
+
+print(72 / m.file.ticks_per_beat)
+print(0.75 * m.file.ticks_per_beat)
+'''

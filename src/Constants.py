@@ -62,6 +62,21 @@ TonalitySequenceMinor = ['A', 'E', 'B', 'F#', 'C#', 'G#', 'D#', 'A#', 'F', 'C', 
 TonalityCircle = dict({'major': [],
                        'minor': []})
 
+# [numerator, denominator]
+TimeSignature = [4, 4]
+TicksPerBeat = 480
+DefaultTempo = 60
+
+BarsInTonality = 4
+ProbabilityCurTonality = 0.4
+
+BarsToGenerate = 30
+
+
+#NotesDurations = [1, 0.5, 0.25, 0.125, 0.0625, 0.03125]
+#NotesDurations = [1, 0.5, 0.25, 0.125, 0.0625]
+NotesDurations = [1, 0.5, 0.25, 0.125]
+
 # не совсем constants, но уж как вышло
 LuscherTestResult = []
 LuscherTestCur = ['blue', 'green', 'red', 'yellow', 'purple', 'black', 'grey', 'brown']
