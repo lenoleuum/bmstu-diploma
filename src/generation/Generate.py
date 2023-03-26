@@ -11,27 +11,27 @@ from stats.Redis import redis_get
 from constants.Constants import ProbabilityCurTonality, BarsToGenerate, BarsInTonality, TimeSignature, NotesDurations, GammaBb, GammaDies, WorkDir
 from utils.ProcessOutput import create_midi_file, play_midi
 
-DATA = redis_get('notes')
+
+# обучающий набор данных из redis
 DUR = redis_get('all_dur')
 ALL_DATA = redis_get('all_new')
+
 
 def generate_music_fragment(tonality: Tonality, data: dict = ALL_DATA, length: int = 100):
     start_note = np.random.choice(tonality.linked_list_to_list(),
                                   p=list([1 / len(tonality.linked_list_to_list()) for i in
-                                          range(len(tonality.linked_list_to_list()))])) + "4"#str(random.randint(1, 7))
+                                          range(len(tonality.linked_list_to_list()))])) + "4" #str(random.randint(1, 7))
     
     start_note = str(convert_note(start_note))
-
-    print("START ", start_note)
-
-    #start_note = random.choice(list(data.keys()))
 
     generated_fragment = [[start_note, predict_duration(start_note)]]
     
     for i in range(length):
         note = predict_next_sound(start_note, data)
         dur = predict_duration(note)
+
         generated_fragment.append([note, dur])
+
         start_note = generated_fragment[-1][0]
 
     print(generated_fragment)
@@ -79,38 +79,40 @@ def get_bar_content(bar_duration: float, beat_duration: float):
 
     return res
 
-def get_suitable_tonality_data(tonality: Tonality, data: dict = DATA):
+@DeprecationWarning
+def get_suitable_tonality_data(tonality: Tonality, data: dict = ALL_DATA):
     data_suitable = dict()
 
     for n in data.keys():
         if n in tonality.linked_list_to_list():
-            data_suitable[n] = DATA[n]
+            data_suitable[n] = data[n]
 
     return data_suitable
 
 def convert_note(note):
-        key = note[:-1]
-        octave = note[-1]
-        midi_number = -1
+    key = note[:-1]
+    octave = note[-1]
+    midi_number = -1
 
-        if not octave.isdigit():
-            key = note
-            octave = '4'
+    if not octave.isdigit():
+        key = note
+        octave = '4'
 
-        try:
-            if 'b' in key:
-                pos = GammaBb.index(key)
-            else:
-                pos = GammaDies.index(key)
-        except:
-            return None
+    try:
+        if 'b' in key:
+            pos = GammaBb.index(key)
+        else:
+            pos = GammaDies.index(key)
+    except:
+        return None
 
-        midi_number += pos + 12 * (int(octave) + 1) + 1
+    midi_number += pos + 12 * (int(octave) + 1) + 1
 
-        return midi_number
+    return midi_number
 
 
-def predict_next_sound(note: str, notes_dict: dict = DATA):
+def predict_next_sound(note: str, notes_dict: dict = ALL_DATA):
+    '''Случайно выбирает следующее событие (аккорд/нота), основываясь на текущем событии, на основе вероятностей в обучающем наборе'''
     data_notes = notes_dict[note]
 
     options_note = [key for key in data_notes.keys()]
@@ -119,6 +121,7 @@ def predict_next_sound(note: str, notes_dict: dict = DATA):
     return np.random.choice(options_note, p=probabilities_note)
 
 def predict_duration(sound:str, dur_dict:dict=DUR):
+    '''Случайно выбирает длительность для заданного звука на основе вероятностей в обучающем наборе'''
     data_dur = dur_dict[sound]
 
     options_dur = [key for key in data_dur.keys()]

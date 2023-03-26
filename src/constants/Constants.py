@@ -86,7 +86,7 @@ LuscherTestCur = ['blue', 'green', 'red', 'yellow', 'purple', 'black', 'grey', '
 LuscherTestDone = False
 
 
-PATH = r"C:\Users\admin\Desktop\newlife\8 semester\в последний путь\midi\midi_songs"
+PATH = r"C:\Users\admin\Desktop\newlife\8 semester\в последний путь\midi\refs"
 WorkDir = r"C:\Users\admin\Desktop\newlife\8 semester\в последний путь\first attempt\samples"
 
 StatsUpdated = False
