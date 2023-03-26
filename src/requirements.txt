@@ -1,0 +1,5 @@
+numpy
+music21
+redis
+peewee
+midi2audio
