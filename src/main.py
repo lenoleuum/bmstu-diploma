@@ -1,5 +1,4 @@
-from MainWindow import MainWindow
-import Constants as const
+from ui.MainWindow import MainWindow
 
 def main():
     root = MainWindow()
