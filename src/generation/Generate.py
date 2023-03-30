@@ -1,13 +1,15 @@
 import numpy as np
 import random
 import datetime
+import music21
 
 import sys
 sys.path.append('..')
 
 from music.Tonality import Tonality
 from music.TonalityCircle import QuartoQuintCircle
-from stats.Redis import redis_get
+from stats.Redis import redis_get,redis_get_parsed
+from stats.Parse import create_key
 from constants.Constants import ProbabilityCurTonality, BarsToGenerate, BarsInTonality, TimeSignature, NotesDurations, GammaBb, GammaDies, WorkDir
 from utils.ProcessOutput import create_midi_file, play_midi
 
@@ -37,6 +39,43 @@ def generate_music_fragment(tonality: Tonality, data: dict = ALL_DATA, length: i
     print(generated_fragment)
 
     return generated_fragment
+
+
+def find_nearest_above(my_array, target):
+    diff = my_array - target
+    mask = np.ma.less(diff, 0)
+    # We need to mask the negative differences and zero
+    # since we are looking for values above
+    if np.all(mask):
+        return None # returns None if target is greater than any value
+    masked_diff = np.ma.masked_array(diff, mask)
+    return masked_diff.argmin()
+
+
+def generate_music_fragment_1(length: int = 100):
+    init_prob_vector = redis_get_parsed("init_prob_vector")
+    transition_matrix_vector = redis_get_parsed("transition_prob_matrix")
+    states = redis_get_parsed("states")
+    
+    note_prob = random.uniform(0, 1)
+    rhythm_prob = random.uniform(0, 1)
+    note_index = find_nearest_above(init_prob_vector, note_prob)
+    curr_index = 0
+
+    print("START ", note_index, states[note_index])
+
+    seq = [None] * length
+
+    while (curr_index < length):
+        note_prob = random.uniform(0, 1)
+        rhythm_prob = random.uniform(0, 1)
+
+        note_index = find_nearest_above(transition_matrix_vector[note_index], note_prob)
+
+        seq[curr_index] = [create_key(states[note_index]), 0.5]
+        curr_index += 1
+
+    return seq
 
 @DeprecationWarning
 def find_combinations(bar_length, beats_durations, res, lastindex=0, lst=[]):
@@ -129,8 +168,21 @@ def predict_duration(sound:str, dur_dict:dict=DUR):
 
     return np.random.choice(options_dur, p=probabilities_dur)
 
+
+
 t = Tonality('major', 'C')
-n = generate_music_fragment(t)
+#n = generate_music_fragment(t)
+#print(n)
 filename = WorkDir + "\\" + str(datetime.datetime.now()).split('.')[0].replace(':', '-') + ".mid"
-create_midi_file(n, time_signature='3/4', bpm=120, file=filename)
+#create_midi_file(n, time_signature='4/4', bpm=100, file=filename)
 #play_midi(filename)
+#n = generate_music_fragment_1()
+#print(n)
+#create_midi_file(n, time_signature='4/4', bpm=100, file=filename)
+
+'''r = music21.chord.Chord(['C', 'E-', 'F#', 'A'])
+print(r)
+k = music21.key.KeySignature(1)
+i = music21.interval.Interval(k.transposePitchFromC, music21.pitch.Pitch('C'))
+r.transpose(-i)
+print(r)'''

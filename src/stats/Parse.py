@@ -95,15 +95,26 @@ def get_bigrams(data:list):
 
     return bigrams    
 
-def count_appearances(start:str, data:list):
+def count_appearances(start:str, data:list, flg_prob: bool=True):
     bigrams_with_current_sound = [create_key(d[1]) for d in data if create_key(d[0]) == start]
 
     count_appearance = dict(Counter(bigrams_with_current_sound))
 
-    for ngram in count_appearance.keys():
-        count_appearance[ngram] = count_appearance[ngram] / len(bigrams_with_current_sound)
+    if flg_prob:
+        for ngram in count_appearance.keys():
+            count_appearance[ngram] = count_appearance[ngram] / len(bigrams_with_current_sound)
 
     return count_appearance
+    
+
+def count_appearances_without_prob(start:str, data:list):
+    res = 0
+
+    for d in data:
+        if create_key(d[1]) == start:
+            res += 1
+
+    return res
 
 def get_distinct_sounds(data:list):
     '''Возвращает список с уникальными событиями в потоке (аккорды/ноты)'''
@@ -119,9 +130,12 @@ def create_key(data:list):
     '''Переводит список аккордов/нот в ключ словаря'''
     key = ""
 
-    for i in range(len(data)):
-        key += str(int(data[i])) 
-        if i != len(data) - 1:
-            key += " "
+    try:
+        for i in range(len(data)):
+            key += str(int(data[i])) 
+            if i != len(data) - 1:
+                key += " "
+    except:
+        key = str(data)
 
     return key

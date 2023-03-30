@@ -24,13 +24,12 @@ class MainWindow:
     def __init__(self):
         self.root = tk.Tk()
         self.file = None
+        self.dur = None
+        self.generated_fragment = None
 
     def setup(self):
         self.root.title("Аля диплом")
         self.root['bg'] = WindowColor
-
-        canvas = tk.Canvas(self.root, width = 220, height = 300, bg = AdditionalColor)
-        canvas.place(x = 0, y = 0)
 
         ws = self.root.winfo_screenwidth()
         hs = self.root.winfo_screenheight()
@@ -38,33 +37,49 @@ class MainWindow:
         x = (ws / 2) - 350
         y = (hs / 2) - 300
 
-        self.root.geometry('%dx%d+%d+%d' % (800, 500, x, y))
+        self.root.geometry('%dx%d+%d+%d' % (800, 400, x, y))
 
-        btn_luscher_test = tk.Button(self.root, text="Тест Люшера", width=20,
+        self.setup_input()
+        self.setup_buttons()
+        self.setup_menu()
+
+    def setup_input(self):
+        lbl_duration = tk.Label(self.root, text="Выберите длину генерируемого фрагмента в нотах: ", bg=WindowColor)
+        lbl_duration.place(x=240, y=40)
+
+        entry_duration = ttk.Spinbox(from_=100, to=1000, increment=10, width=10)
+        entry_duration.place(x=540, y=42)
+        self.dur = entry_duration.get()
+
+
+    def setup_buttons(self):
+        canvas = tk.Canvas(self.root, width = 220, height = 300, bg = AdditionalColor)
+        canvas.place(x = 0, y = 0)
+
+        btn_luscher_test = tk.Button(canvas, text="Тест Люшера", width=20,
                                      command=lambda: self.start_LuscherTest())
         btn_luscher_test.place(x=35, y=20)
 
-        btn_stats = tk.Button(self.root, text="Обновить статистику", width=20,
+        btn_stats = tk.Button(canvas, text="Обновить статистику", width=20,
                                  command=lambda: self.update_stats())
         btn_stats.place(x=35, y=60)
 
-        btn_generate = tk.Button(self.root, text="Начать генерацию", width=20,
+        btn_generate = tk.Button(canvas, text="Начать генерацию", width=20,
                                  command=lambda: self.start_generation())
         btn_generate.place(x=35, y=100)
 
-        btn_play = tk.Button(self.root, text="Воспроизвести", width=20,
+        btn_play = tk.Button(canvas, text="Воспроизвести", width=20,
                              command=lambda: self.play_generated_fragment())
         btn_play.place(x=35, y=140)
 
-        btn_download = tk.Button(self.root, text="Скачать", width=20,
+        btn_download = tk.Button(canvas, text="Скачать", width=20,
                                  command=lambda: self.download_generated_fragment())
         btn_download.place(x=35, y=180)
 
-        btn_exit = tk.Button(self.root, text="Выход", width=20,
+        btn_exit = tk.Button(canvas, text="Выход", width=20,
                                  command=lambda: self.exit())
         btn_exit.place(x=35, y=220)
 
-        self.setup_menu()
 
     def setup_menu(self):
         main_menu = tk.Menu()
@@ -73,7 +88,6 @@ class MainWindow:
 
         self.root.config(menu=main_menu)
 
-    # todo: перемешвать цвета при выборе + в одну линию
     def start_LuscherTest(self):
         if LuscherTestDone:
             showerror(title="Ошибка", message="Вы уже прошли тест Люшера!")
@@ -92,7 +106,7 @@ class MainWindow:
             #generated_fragment = handle_generation(tonica + '4', tonality_gamma)
 
             # todo: process_input должен возвращать Tonality
-            generated_fragment = generate_music_fragment(Tonality(lad, tonica))
+            generated_fragment = generate_music_fragment(Tonality(lad, tonica), length=self.dur)
             print(generate_music_fragment)
 
             '''self.file = MidiFile(DefaultMidiFile)
