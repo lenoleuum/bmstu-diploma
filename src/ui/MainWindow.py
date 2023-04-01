@@ -14,10 +14,7 @@ from utils.ProcessInput import process_input, translate_note, translate_lad
 from music.Tonality import Tonality
 from stats.Refresh import refresh_stats
 from generation.Generate import generate_music_fragment
-
-
-#from MyMidiFile import MidiFile
-#from GenerateFragment import handle_generation, generate_music_fragment
+from stats.Parser import Parser
 
 
 class MainWindow:
@@ -141,7 +138,8 @@ class MainWindow:
     @staticmethod
     def update_stats():
         if not StatsUpdated:
-            refresh_stats(PATH)
+            p = Parser(PATH)
+            p.parse()
         else:
             showerror(title="Ошибка", message="Вы уже обновляли статистику!")
 

@@ -88,11 +88,3 @@ def refresh_stats(path:str=PATH):
 def clear_stats():
     Track.truncate_table()
     Stats.truncate_table()
-
-
-d = collections.OrderedDict()
-d['a'] = 'value_a'
-d['b'] = 'value_b'
-d['c'] = 'value_c'
-d['c']['value_c'] = 'CCC'
-print(d)

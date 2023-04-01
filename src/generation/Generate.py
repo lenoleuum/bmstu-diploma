@@ -28,6 +28,7 @@ def generate_music_fragment(tonality: Tonality, data: dict = ALL_DATA, length: i
 
     generated_fragment = [[start_note, predict_duration(start_note)]]
     
+    
     for i in range(length):
         note = predict_next_sound(start_note, data)
         dur = predict_duration(note)
@@ -56,8 +57,10 @@ def generate_music_fragment_1(length: int = 100):
     init_prob_vector = redis_get_parsed("init_prob_vector")
     transition_matrix_vector = redis_get_parsed("transition_prob_matrix")
     states = redis_get_parsed("states")
+
+    #print(states)
     
-    note_prob = random.uniform(0, 1)
+    '''note_prob = random.uniform(0, 1)
     rhythm_prob = random.uniform(0, 1)
     note_index = find_nearest_above(init_prob_vector, note_prob)
     curr_index = 0
@@ -73,9 +76,32 @@ def generate_music_fragment_1(length: int = 100):
         note_index = find_nearest_above(transition_matrix_vector[note_index], note_prob)
 
         seq[curr_index] = [create_key(states[note_index]), 0.5]
+        curr_index += 1'''
+
+
+    sequence = [None] * length
+
+    # comment in for same start note as training data
+    note_prob = random.uniform(0, 1)
+    rhythm_prob = random.uniform(0, 1)
+    note_index = find_nearest_above(init_prob_vector, note_prob)
+    curr_index = 0
+
+    # comment in for seed
+    # sequence[0] = parser.states[0]
+    # note_index = 0
+    # curr_index = 1
+
+    while (curr_index < length):
+        note_prob = random.uniform(0, 1)
+        rhythm_prob = random.uniform(0, 1)
+
+        note_index = find_nearest_above(transition_matrix_vector[note_index], note_prob)
+
+        sequence[curr_index] = states[note_index]
         curr_index += 1
 
-    return seq
+    return sequence
 
 @DeprecationWarning
 def find_combinations(bar_length, beats_durations, res, lastindex=0, lst=[]):
@@ -176,9 +202,9 @@ t = Tonality('major', 'C')
 filename = WorkDir + "\\" + str(datetime.datetime.now()).split('.')[0].replace(':', '-') + ".mid"
 #create_midi_file(n, time_signature='4/4', bpm=100, file=filename)
 #play_midi(filename)
-#n = generate_music_fragment_1()
-#print(n)
-#create_midi_file(n, time_signature='4/4', bpm=100, file=filename)
+n = generate_music_fragment_1()
+print(n)
+create_midi_file(n, time_signature='3/4', bpm=120, file=filename)
 
 '''r = music21.chord.Chord(['C', 'E-', 'F#', 'A'])
 print(r)
