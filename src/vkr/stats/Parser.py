@@ -52,8 +52,9 @@ class Parser:
         self.walk_directory(data, self.path)
         
         for dir in data:
-            cur_color = dir[0].split("\\")[-2]
-            print("parsing", cur_color.upper())
+            cur_color = dir[0].split("\\")[-3]
+            cur_lad = dir[0].split("\\")[-2]
+            print("parsing", cur_color.upper(), cur_lad)
 
             for file in dir:
                 print(file)
@@ -102,9 +103,9 @@ class Parser:
                     continue
 
             self.build_training_data()
-            self.save_training_data(key_states="states_" + cur_color, 
-                                    key_init_vector="init_prob_vector_" + cur_color,
-                                    key_prob_matrix="transition_prob_matrix_" + cur_color)
+            self.save_training_data(key_states="states_" + cur_color + "_" + cur_lad, 
+                                    key_init_vector="init_prob_vector_" + cur_color + "_" + cur_lad,
+                                    key_prob_matrix="transition_prob_matrix_" + cur_color + "_" + cur_lad)
 
         print('DONE')
 
@@ -157,3 +158,6 @@ class Parser:
         redis_set(key_states, self.states, False)
         redis_set(key_init_vector, self.initial_probability_vector, False)
         redis_set(key_prob_matrix, self.transition_probability_matrix, False)
+
+#p = Parser(Constants.ColorsPath)
+#p.parse()

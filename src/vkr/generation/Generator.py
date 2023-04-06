@@ -13,9 +13,13 @@ class Generator:
         self.states, self.init_prob_vector, self.transition_matrix_vector = dict(), dict(), dict()
 
         for color in Constants.MainColors:
-            self.states[color] = redis_get_parsed("states_" + color)
-            self.init_prob_vector[color] = redis_get_parsed("init_prob_vector_" + color)
-            self.transition_matrix_vector[color] = redis_get_parsed("transition_prob_matrix_" + color)
+            self.states[color] = dict()
+            self.init_prob_vector[color] = dict()
+            self.transition_matrix_vector[color] = dict()
+            for lad in Constants.Lads:
+                self.states[color][lad] = redis_get_parsed("states_" + color + "_" + lad)
+                self.init_prob_vector[color][lad] = redis_get_parsed("init_prob_vector_" + color + "_" + lad)
+                self.transition_matrix_vector[color][lad] = redis_get_parsed("transition_prob_matrix_" + color + "_" + lad)
 
         
     @staticmethod
@@ -29,21 +33,26 @@ class Generator:
         masked_diff = np.ma.masked_array(diff, mask)
         return masked_diff.argmin()
 
-    def generate(self, color, length:int = 100):
+    def generate(self, meta:dict, length:int = 100):
         print("[generate]")
+        
+        color = meta['color']
+        lad = meta['lad']
+
+        print(color, lad)
 
         generated_fragment = [None] * length
 
         note_prob = random.uniform(0, 1)
-        note_index = self.find_nearest_above(self.init_prob_vector[color], note_prob)
+        note_index = self.find_nearest_above(self.init_prob_vector[color][lad], note_prob)
         curr_index = 0
 
         while (curr_index < length):
             note_prob = random.uniform(0, 1)
 
-            note_index = self.find_nearest_above(self.transition_matrix_vector[color][note_index], note_prob)
+            note_index = self.find_nearest_above(self.transition_matrix_vector[color][lad][note_index], note_prob)
 
-            generated_fragment[curr_index] = self.states[color][note_index]
+            generated_fragment[curr_index] = self.states[color][lad][note_index]
             curr_index += 1
 
         print("DONE")

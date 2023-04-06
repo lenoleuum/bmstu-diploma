@@ -2,7 +2,7 @@ import sys
 sys.path.append("..")
 
 
-from constants.Constants import MainColors, MainColorsNum, Major, Minor, MainColorsToNotes, GammaTranslated, MajorTranslated, MinorTranslated
+from constants.Constants import Constants
 
 class InputHandler:
     def __init__(self):
@@ -12,10 +12,10 @@ class InputHandler:
         cnt = 0
 
         for i in range(len(colors)):
-            if colors[i] in MainColors and i <= 4:
+            if colors[i] in Constants.MainColors and i < 4:
                 cnt += 1
 
-        return cnt == MainColorsNum
+        return cnt == Constants.MainColorsNum
 
 
     def get_dominant_color(self, colors:list):
@@ -24,7 +24,7 @@ class InputHandler:
 
     def get_rejected_color(self, colors:list):
         for col in reversed(colors):
-            if col in MainColors:
+            if col in Constants.MainColors:
                 return col
 
 
@@ -33,10 +33,14 @@ class InputHandler:
         if self.check_base_colors(colors):
             meta['bpm'] = 140
             meta['time_signature'] = '4/4'
-            lad, tonica_color = Major, self.get_dominant_color(colors)
+            lad, tonica_color = Constants.Lads[0], self.get_dominant_color(colors)
+            meta['lad'] = lad
+            meta['color'] = tonica_color
         else:
             meta['bpm'] = 100
             meta['time_signature'] = '3/4'
-            lad, tonica_color = Minor, self.get_rejected_color(colors)
+            lad, tonica_color = Constants.Lads[1], self.get_rejected_color(colors)
+            meta['lad'] = lad
+            meta['color'] = tonica_color
 
-        return meta, tonica_color
+        return meta

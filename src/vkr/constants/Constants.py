@@ -36,6 +36,7 @@ class Constants:
 
     TracksPath = r"C:\Users\admin\Desktop\newlife\8 semester\в последний путь\VKR\training data\tracks"
 
+    Lads = ['major', 'minor']
 
 Major = 'major'
 Minor = 'minor'

@@ -15,15 +15,21 @@ class Classificator:
             dict[key] = dict[key] + 1 if key in dict.keys() else 1
 
         return dict
+    
 
+    def define_main_tonality(self, tonalities:dict):
+        return max(tonalities, key=tonalities.get)
 
-    def define_color(self, tonalities:dict):
-        max_tonality = max(tonalities, key=tonalities.get)
-
+    def define_color(self, tonality:str):
         for key in Constants.TonalititesToColors.keys():
-            if max_tonality.lower() in Constants.TonalititesToColors[key]:
+            if tonality.lower() in Constants.TonalititesToColors[key]:
                 return key
-
+            
+    def define_lad(self, tonality:str):
+        if tonality.isupper():
+            return 'major'
+        else:
+            return 'minor'
 
     def classify(self):
         data = []
@@ -35,21 +41,23 @@ class Classificator:
             for file in dir:
                 midi_part = self.parser.open_midi_file(file, True)
                 tonalitites = self.extract_tonalities(midi_part)
-                color = self.define_color(tonalitites)
+                main_tonality = self.define_main_tonality(tonalitites)
+                color = self.define_color(main_tonality)
+                lad = self.define_lad(main_tonality)
 
                 if color is None:
                     continue
 
                 for key in Constants.ColorsPathDict.keys():
                     if color == key:
-                        shutil.copy(file, Constants.ColorsPathDict[key])
+                        shutil.copy(file, Constants.ColorsPathDict[key] + "\\" + lad)
 
-                print(file, color.upper())
+                print(file, color.upper(), lad)
 
         print("DONE")
 
     #def clear_color_folders(self):
 
 
-c = Classificator()
+#c = Classificator()
 #c.classify()

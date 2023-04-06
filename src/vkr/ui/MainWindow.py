@@ -103,12 +103,12 @@ class MainWindow:
 
     def start_generation(self):
         if self.luscher_test_handler.LuscherTestDone:
-            self.meta, tonica_color = self.input_handler.handle(self.luscher_test_handler.LuscherTestResult)
+            self.meta = self.input_handler.handle(self.luscher_test_handler.LuscherTestResult)
             if self.entry_duration.get() == "":
-                self.generated_fragment = self.generator.generate(color=tonica_color.lower())
+                self.generated_fragment = self.generator.generate(self.meta)
             else:
                 self.dur = self.entry_duration.get()
-                self.generated_fragment = self.generator.generate(color=tonica_color.lower(), length=int(self.dur))
+                self.generated_fragment = self.generator.generate(self.meta, length=int(self.dur))
 
             # todo: я начинаю генерацию с 4 октавы - оставляем?
             #generated_fragment = handle_generation(tonica + '4', tonality_gamma)
@@ -127,7 +127,8 @@ class MainWindow:
 
     def download_generated_fragment(self):
         if self.generated_fragment is not None:
-            self.converter.convert(self.generated_fragment, self.meta)
+            self.file = self.converter.convert(self.generated_fragment, self.meta)
+            print(self.file)
         else:
             showerror(title="Ошибка", message="Вы еще не сгенерировали музыкальный фрагмент!")
             return
