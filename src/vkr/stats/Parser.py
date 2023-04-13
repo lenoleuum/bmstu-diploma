@@ -2,8 +2,8 @@ import numpy as np
 import collections
 from music21 import midi, note, chord
 import os
-from constants.Constants import PATH1
 from constants.Constants import Constants
+import mido
 
 from .Redis import redis_set
 
@@ -158,6 +158,21 @@ class Parser:
         redis_set(key_states, self.states, False)
         redis_set(key_init_vector, self.initial_probability_vector, False)
         redis_set(key_prob_matrix, self.transition_probability_matrix, False)
+
+'''
+ def get_bpm_time_signature(self, path:str):
+        file = mido.MidiFile(path)
+
+        for track in file.tracks:
+            for msg in track:
+                if msg.type == "set_tempo":
+                    print(msg)
+
+                if msg.type == "time_signature":
+                    print(msg)
+                    '''
+   
+
 
 #p = Parser(Constants.ColorsPath)
 #p.parse()

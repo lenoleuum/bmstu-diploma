@@ -110,6 +110,8 @@ class MainWindow:
                 self.dur = self.entry_duration.get()
                 self.generated_fragment = self.generator.generate(self.meta, length=int(self.dur))
 
+            print("[meta] ", self.meta['color'], self.meta['lad'], self.meta['bpm'], self.meta['time_signature'])
+
             # todo: я начинаю генерацию с 4 октавы - оставляем?
             #generated_fragment = handle_generation(tonica + '4', tonality_gamma)
 

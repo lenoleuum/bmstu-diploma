@@ -1,4 +1,5 @@
 import sys
+import random
 sys.path.append("..")
 
 
@@ -31,16 +32,20 @@ class InputHandler:
     def handle(self, colors:list):
         meta = dict()
         if self.check_base_colors(colors):
-            meta['bpm'] = 140
-            meta['time_signature'] = '4/4'
+            meta['time_signature'] = random.choice(Constants.TimeSignatureList)
             lad, tonica_color = Constants.Lads[0], self.get_dominant_color(colors)
             meta['lad'] = lad
             meta['color'] = tonica_color
+
+            bpm_interval = Constants.TempoDict[tonica_color][random.choice(list(Constants.TempoDict[tonica_color].keys()))]
+            meta['bpm'] = random.randint(bpm_interval[0], bpm_interval[1])
         else:
-            meta['bpm'] = 100
-            meta['time_signature'] = '3/4'
+            meta['time_signature'] = random.choice(Constants.TimeSignatureList)
             lad, tonica_color = Constants.Lads[1], self.get_rejected_color(colors)
             meta['lad'] = lad
             meta['color'] = tonica_color
+
+            bpm_interval = Constants.TempoDict[tonica_color][random.choice(list(Constants.TempoDict[tonica_color].keys()))]
+            meta['bpm'] = random.randint(bpm_interval[0], bpm_interval[1])
 
         return meta

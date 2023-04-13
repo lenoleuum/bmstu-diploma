@@ -1,4 +1,5 @@
 import datetime
+import os
 from music21 import note, instrument, stream, tempo, midi, chord, meter
 from midi2audio import FluidSynth
 
@@ -40,8 +41,10 @@ class Converter:
 
         midi_stream = stream.Stream(result)
 
+        folder = self.create_samples_dir()
+
         if filename is None:
-            filename = self.build_file_name()
+            filename = self.build_file_name(folder)
 
         midi_stream.write('midi', fp=filename)   
 
@@ -52,9 +55,18 @@ class Converter:
             FluidSynth().play_midi(path)
         except:
             return
+        
+    @staticmethod
+    def create_samples_dir():
+        folder_name = Constants.WorkDir + "\\" + str(datetime.date.today())
+
+        if not os.path.exists(folder_name):
+            os.makedirs(folder_name)
+
+        return folder_name
 
     @staticmethod
-    def build_file_name():
-        filename = Constants.WorkDir + "\\" + str(datetime.datetime.now()).split('.')[0].replace(':', '-') + ".mid"
+    def build_file_name(folder:str):
+        filename = folder + "\\" + str(datetime.datetime.now()).split('.')[0].replace(':', '-') + ".mid"
 
         return filename

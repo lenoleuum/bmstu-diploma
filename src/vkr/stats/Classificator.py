@@ -1,4 +1,5 @@
 import shutil
+from pathlib import Path
 
 from constants.Constants import Constants
 from .Parser import Parser
@@ -35,6 +36,8 @@ class Classificator:
         data = []
         self.parser.walk_directory(data, Constants.TracksPath)
 
+        self.clear_color_folders()
+
         print("[classify]")
 
         for dir in data:
@@ -56,7 +59,12 @@ class Classificator:
 
         print("DONE")
 
-    #def clear_color_folders(self):
+    def clear_color_folders(self):
+        for key in Constants.ColorsPathDict.keys():
+                for lad in Constants.Lads:
+                    path = Constants.ColorsPathDict[key] + "\\" + lad
+                    [f.unlink() for f in Path(path).glob("*") if f.is_file()] 
+
 
 
 #c = Classificator()
