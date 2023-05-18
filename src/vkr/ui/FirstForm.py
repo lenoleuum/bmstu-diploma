@@ -95,6 +95,8 @@ class FirstForm:
         self.destroy()
 
     def destroy(self):
+        print(LuscherTestHandler.LuscherTestResult)
+        
         self.root.destroy()
         f = SecondForm()
         f.run()

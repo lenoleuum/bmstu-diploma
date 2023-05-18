@@ -12,15 +12,18 @@ class InputHandler:
     def check_base_colors(self, colors:list):
         cnt = 0
 
+        # основные цвета должны входить в первые 5(!) позиций
         for i in range(len(colors)):
-            if colors[i] in Constants.MainColors and i < 4:
+            if colors[i] in Constants.MainColors and i < 5:
                 cnt += 1
 
         return cnt == Constants.MainColorsNum
 
 
     def get_dominant_color(self, colors:list):
-        return colors[0]
+        for col in colors:
+            if col in Constants.MainColors:
+                return col
 
 
     def get_rejected_color(self, colors:list):
@@ -37,7 +40,7 @@ class InputHandler:
             meta['lad'] = lad
             meta['color'] = tonica_color
 
-            bpm_interval = Constants.TempoDict[tonica_color][random.choice(list(Constants.TempoDict[tonica_color].keys()))]
+            bpm_interval = Constants.TempoDict[tonica_color + " " + lad][random.choice(list(Constants.TempoDict[tonica_color + " " + lad].keys()))]
             meta['bpm'] = random.randint(bpm_interval[0], bpm_interval[1])
         else:
             meta['time_signature'] = random.choice(Constants.TimeSignatureList)
@@ -45,7 +48,8 @@ class InputHandler:
             meta['lad'] = lad
             meta['color'] = tonica_color
 
-            bpm_interval = Constants.TempoDict[tonica_color][random.choice(list(Constants.TempoDict[tonica_color].keys()))]
+            bpm_interval = Constants.TempoDict[tonica_color + " " + lad][random.choice(list(Constants.TempoDict[tonica_color + " " + lad].keys()))]
             meta['bpm'] = random.randint(bpm_interval[0], bpm_interval[1])
+            meta['additional_color'] = colors[len(colors) - 1]
 
         return meta

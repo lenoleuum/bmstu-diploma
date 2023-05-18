@@ -5,7 +5,7 @@ import datetime
 import sys
 sys.path.append('..')
 
-from stats.Redis import redis_get_parsed
+from analyze.Redis import redis_get_parsed
 from constants.Constants import Constants
 
 class Generator:
@@ -45,6 +45,7 @@ class Generator:
 
         note_prob = random.uniform(0, 1)
         note_index = self.find_nearest_above(self.init_prob_vector[color][lad], note_prob)
+
         curr_index = 0
 
         while (curr_index < length):
