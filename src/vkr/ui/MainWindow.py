@@ -95,7 +95,10 @@ class MainWindow:
                         command=lambda: self.select_format(format)) 
         mp3_rb.place(x=460, y=450)
         
-        format.set(1)
+        if self.fragment_format == "midi":
+            format.set(1)
+        else:
+            format.set(2)
 
         self.normalize = tk.IntVar()
   

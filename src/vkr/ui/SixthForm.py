@@ -1,5 +1,6 @@
 import tkinter as tk
 from random import shuffle
+from tkinter import font as tkFont
 
 from .SeventhForm import SeventhForm
 
@@ -34,8 +35,10 @@ class SixthForm:
 
         self.root.geometry('%dx%d+%d+%d' % (800, 200, x, y))
 
-        label_test = tk.Label(self.root, text='Выберите наиболее приятный для Вас цвет', bg=Constants.WindowColor)
-        label_test.place(x=20, y=10)
+        lbl_font = tkFont.Font(family='Helvetica', size=8, weight=tkFont.NORMAL)
+        label_test = tk.Label(self.root, text='Выберите наиболее приятный для Вас цвет', 
+                              font=lbl_font, bg=Constants.WindowColor)
+        label_test.place(x=20, y=20)
 
         self.color_setup()
 

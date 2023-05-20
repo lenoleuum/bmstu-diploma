@@ -29,15 +29,8 @@ class Constants:
                             'green': ['b', 'c', 'c#'],
                             'blue': ['d', 'd#', 'e']})
 
-
-    ColorsPathDict = dict({'red': r"C:\Users\admin\Desktop\newlife\8 semester\в последний путь\VKR\training data\colors\red",
-                        'blue': r"C:\Users\admin\Desktop\newlife\8 semester\в последний путь\VKR\training data\colors\blue",
-                        'green': r"C:\Users\admin\Desktop\newlife\8 semester\в последний путь\VKR\training data\colors\green",
-                        'yellow': r"C:\Users\admin\Desktop\newlife\8 semester\в последний путь\VKR\training data\colors\yellow"})
-
-    ColorsPath = r"C:\Users\admin\Desktop\newlife\8 semester\в последний путь\VKR\training data\colors"
-
-    TracksPath = r"C:\Users\admin\Desktop\newlife\8 semester\в последний путь\VKR\training data\tracks"
+    ColorsPath = os.path.split(WorkDir)[0] + "\\training data\\colors"
+    TracksPath = os.path.split(WorkDir)[0] + "\\training data\\tracks"
 
     Lads = ['major', 'minor']
 

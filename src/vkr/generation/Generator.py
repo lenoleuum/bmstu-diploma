@@ -59,4 +59,3 @@ class Generator:
         print("DONE")
 
         return generated_fragment
-    
