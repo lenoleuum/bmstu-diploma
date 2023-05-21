@@ -9,22 +9,16 @@ def main():
     research_data = read_csv(r'C:\\Users\\admin\\Desktop\\newlife\\8 semester\\в последний путь\\VKR\vkr\\research\\result_v1.csv')
     cr_cnt = 5
 
-    '''for i in range(cr_cnt):
+    for i in range(cr_cnt):
         fig = plt.figure()
         sns.countplot(x='Критерий №' + str(i+1), data=research_data)
-        plt.show()'''
+        plt.show()
 
     quantiles_cr_1 = research_data['Критерий №1'].quantile([0.25,0.5,0.75])
     quantiles_cr_2 = research_data['Критерий №2'].quantile([0.25,0.5,0.75])
     quantiles_cr_3 = research_data['Критерий №3'].quantile([0.25,0.5,0.75])
     quantiles_cr_4 = research_data['Критерий №4'].quantile([0.25,0.5,0.75])
     quantiles_cr_5 = research_data['Критерий №5'].quantile([0.25,0.5,0.75])
-
-    '''print(quantiles_cr_1)
-    print(quantiles_cr_2)
-    print(quantiles_cr_3)
-    print(quantiles_cr_4)
-    print(quantiles_cr_5)'''
 
     quantiles = [quantiles_cr_1, quantiles_cr_2, quantiles_cr_3, quantiles_cr_4, quantiles_cr_5]
     cr_q_dicts = []

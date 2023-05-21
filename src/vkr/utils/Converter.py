@@ -1,6 +1,7 @@
 import datetime
 import os
-from music21 import note, instrument, stream, tempo, midi, chord, meter, volume
+import music21
+from music21 import note, instrument, stream, tempo, midi, chord, meter, volume, environment
 from midi2audio import FluidSynth
 import random
 import fluidsynth
@@ -22,6 +23,9 @@ class Converter:
     def convert(self, data:list, meta:dict, filename:str=None):
         result = []
         offset = 0
+
+        environment.Environment()['musicxmlPath'] = r'C:\\Program Files\\MuseScore 4\\bin\\MuseScore4.exe'
+        environment.Environment()['musescoreDirectPNGPath'] = r'C:\\Program Files\\MuseScore 4\\bin\\MuseScore4.exe'
 
         res_stream = stream.Stream()
 
@@ -61,10 +65,14 @@ class Converter:
             filename = self.build_file_name(folder, meta)
 
         res_stream.write('midi', fp=filename)  
+        #res_stream.show()
 
         print(filename)
 
-        return filename
+        return filename, res_stream
+    
+    def show_notes(self, stream_to_show):
+        stream_to_show.show()
 
     def play_midi(self, path:str):
         try:
@@ -90,3 +98,4 @@ class Converter:
         filename = folder + "\\" + str(datetime.datetime.now()).split('.')[0].replace(':', '-') + " " + meta['color'] + " " + meta['lad'] + ".mid"
 
         return filename
+    

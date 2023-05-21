@@ -7,7 +7,10 @@ import sys
 from tkinter import font as tkFont
 import os
 import shutil
+import threading
 from PIL import ImageTk
+from pydub import AudioSegment
+from pydub.playback import play
 
 from .FirstForm import FirstForm
 
@@ -21,6 +24,8 @@ from analyze.Classificator import Classificator
 from generation.Generator import Generator
 from utils.Converter import Converter
 from utils.Transformer import Transformer
+from utils.Player import Player
+
 
 class MainWindow:
     def __init__(self):
@@ -42,6 +47,11 @@ class MainWindow:
         self.fragment_format = "midi"
 
         self.playback = None
+        self.player = None
+
+        self.thread_show = None
+
+        self.generated_stream = None
 
     def setup(self):
         self.root.title("ВКР")
@@ -115,7 +125,7 @@ class MainWindow:
 
         btn_luscher_test = tk.Button(canvas, text="\nТест Люшера\n", width=30, font=button_font,
                                      command=lambda: self.start_LuscherTest())
-        btn_luscher_test.place(x=50, y=50)
+        btn_luscher_test.place(x=50, y=30)
 
         '''btn_stats = tk.Button(canvas, text="Обновить статистику", width=20,
                                  command=lambda: self.update_stats())
@@ -123,11 +133,11 @@ class MainWindow:
 
         btn_generate = tk.Button(canvas, text="\nСгенерировать фрагмент\n", width=30, font=button_font,
                                  command=lambda: self.start_generation())
-        btn_generate.place(x=50, y=150)
+        btn_generate.place(x=50, y=130)
 
         btn_download = tk.Button(canvas, text="\nСкачать фрагмент\n", width=30, font=button_font,
                                  command=lambda: self.download_generated_fragment())
-        btn_download.place(x=50, y=250)
+        btn_download.place(x=50, y=230)
 
         '''self.image_play = tk.PhotoImage(file="C:\\Users\\admin\\Desktop\\newlife\\8 semester\\в последний путь\\VKR\\vkr\\ui\\play.png")
         self.image_play = self.image_play.subsample(19, 19)
@@ -135,9 +145,13 @@ class MainWindow:
                              command=lambda: self.play_generated_fragment())
         self.btn_play.place(x=120, y=350)'''
 
+        self.btn_show = tk.Button(canvas, text="\nПартитура\n", font=button_font, width=30,
+                             command=lambda: self.handle_show_notes())
+        self.btn_show.place(x=50, y=330)
+
         self.btn_play = tk.Button(canvas, text="\nВоспроизвести\n", font=button_font, width=30,
-                             command=lambda: self.play_generated_fragment())
-        self.btn_play.place(x=50, y=350)
+                             command=lambda: self.handle_play_generated_fragment())
+        self.btn_play.place(x=50, y=430)
 
         '''self.image_pause = tk.PhotoImage(file="C:\\Users\\admin\\Desktop\\newlife\\8 semester\\в последний путь\\VKR\\vkr\\ui\\pause.png")
         self.image_pause = self.image_pause.subsample(18, 18)
@@ -147,7 +161,7 @@ class MainWindow:
 
         btn_exit = tk.Button(canvas, text="\nВыход\n", width=30, font=button_font,
                                  command=lambda: self.exit())
-        btn_exit.place(x=50, y=450)
+        btn_exit.place(x=50, y=530)
 
     def setup_fragment_info(self):
         canvas = tk.Canvas(self.root, width = self.root.winfo_screenwidth() - 430, height = 150, bg = Constants.AdditionalColorInfo)
@@ -207,6 +221,13 @@ class MainWindow:
             f = FirstForm()
             f.run()
 
+    def handle_show_notes(self):
+        thread = threading.Thread(target=self.show_notes)
+        thread.daemon = True
+        thread.start()
+
+    def show_notes(self):
+        self.converter.show_notes(self.generated_stream)
 
     def start_generation(self):
         if LuscherTestHandler.LuscherTestDone:
@@ -223,15 +244,28 @@ class MainWindow:
 
             print("[meta] ", self.meta['color'], self.meta['lad'], self.meta['bpm'], self.luscher_test_handler.LuscherTestResult[7])
 
-            self.file = self.converter.convert(self.generated_fragment, self.meta)
+            self.file, self.generated_stream = self.converter.convert(self.generated_fragment, self.meta)
         else:
             showerror(title="Ошибка", message="Сначала пройдите тест Люшера!")
 
+    def handle_play_generated_fragment(self):
+        tmp_filename = "/tmp/playing.mp3"
+
+        if self.player is None:
+            os.remove(tmp_filename)
+            self.transformer.midi_to_mp3(self.file, tmp_filename)
+                      
+            self.player = Player(tmp_filename)
+            self.player.start()
+        else:
+            self.player.stop()
+            self.player.join()
+            self.player = None
+
+            os.remove(tmp_filename)
 
     def play_generated_fragment(self):
         if self.file is not None:
-            #self.converter.play_midi(self.file)
-
             tmp_filename = "tmp.mp3"
             self.transformer.midi_to_mp3(self.file, tmp_filename)
 
@@ -297,3 +331,6 @@ class MainWindow:
 
     def exit(self):
         self.root.destroy()
+
+
+
