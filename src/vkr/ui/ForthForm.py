@@ -34,19 +34,19 @@ class ForthForm:
         x = (ws / 2) - 500
         y = (hs / 2) - 200
 
-        self.root.geometry('%dx%d+%d+%d' % (800, 200, x, y))
+        self.root.geometry('%dx%d+%d+%d' % (800, 150, x, y))
 
         lbl_font = tkFont.Font(family='Helvetica', size=8, weight=tkFont.NORMAL)
         label_test = tk.Label(self.root, text='Выберите наиболее приятный для Вас цвет', 
                               font=lbl_font, bg=Constants.WindowColor)
-        label_test.place(x=20, y=20)
+        label_test.place(x=20, y=30)
 
         self.color_setup()
 
     def color_setup(self):
         color_buttons = []
         offset = [30, 90]
-        start = [20, 70]
+        start = [20, 90]
 
         LuscherTestCurShuffled = LuscherTestHandler.LuscherTestCur
         shuffle(LuscherTestCurShuffled)

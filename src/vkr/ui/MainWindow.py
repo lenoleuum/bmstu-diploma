@@ -8,8 +8,7 @@ from tkinter import font as tkFont
 import os
 import shutil
 import threading
-from PIL import ImageTk
-from pydub import AudioSegment
+import datetime
 from pydub.playback import play
 
 from .FirstForm import FirstForm
@@ -53,6 +52,9 @@ class MainWindow:
 
         self.generated_stream = None
 
+        # todo
+        self.demo_flg = False
+
     def setup(self):
         self.root.title("ВКР")
         self.root['bg'] = Constants.WindowColor
@@ -84,26 +86,26 @@ class MainWindow:
     def setup_input(self):
         rb_font = tkFont.Font(family='Helvetica', size=12, weight=tkFont.NORMAL)
 
-        self.lbl_duration = tk.Label(self.root, text="Длина фрагмента в звуковых объектах: ", 
+        self.lbl_duration = tk.Label(self.root, text="Количество тактов для генерации: ", 
                                      font=rb_font, bg=Constants.WindowColor)
-        self.lbl_duration.place(x=460, y=300)
+        self.lbl_duration.place(x=460, y=270)
 
-        self.entry_duration = ttk.Spinbox(from_=100, to=1000, increment=10, width=10)
-        self.entry_duration.place(x=770, y=300)
+        self.entry_duration = ttk.Spinbox(from_=25, to=250, increment=1, width=10)
+        self.entry_duration.place(x=770, y=270)
 
         format = tk.IntVar() 
         format_lbl = tk.Label(text = "Формат музыкального фрагмента для скачивания", font=rb_font, bg=Constants.WindowColor) 
-        format_lbl.place(x=460, y=400)
+        format_lbl.place(x=460, y=330)
 
         midi_rb = tk.Radiobutton(self.root, text="midi", variable=format, value=1, 
                         font=rb_font, bg=Constants.WindowColor,
                         command=lambda: self.select_format(format)) 
-        midi_rb.place(x=460, y=430)
+        midi_rb.place(x=460, y=370)
         
         mp3_rb = tk.Radiobutton(self.root, text="mp3", variable=format, value=2, 
                         font=rb_font, bg=Constants.WindowColor,
                         command=lambda: self.select_format(format)) 
-        mp3_rb.place(x=460, y=450)
+        mp3_rb.place(x=460, y=400)
         
         if self.fragment_format == "midi":
             format.set(1)
@@ -114,7 +116,7 @@ class MainWindow:
   
         normalize_cb = tk.Checkbutton(text="Нормализация фрагмента", variable=self.normalize,
                                        font=rb_font, bg=Constants.WindowColor)
-        normalize_cb.place(x=460, y=490)
+        normalize_cb.place(x=460, y=460)
 
 
     def setup_buttons(self):
@@ -164,31 +166,39 @@ class MainWindow:
         btn_exit.place(x=50, y=530)
 
     def setup_fragment_info(self):
-        canvas = tk.Canvas(self.root, width = self.root.winfo_screenwidth() - 430, height = 150, bg = Constants.AdditionalColorInfo)
+        canvas = tk.Canvas(self.root, width = self.root.winfo_screenwidth() - 430, height = 230, bg = Constants.AdditionalColorInfo)
         canvas.place(x = 432, y = 0)
 
         header_font = tkFont.Font(family='Helvetica', size=12, weight=tkFont.BOLD)
-        info_font = tkFont.Font(family='Helvetica', size=10, weight=tkFont.NORMAL)
+        info_font = tkFont.Font(family='Helvetica', size=11, weight=tkFont.NORMAL)
 
         fragment_info_lbl = tk.Label(self.root, text="Информация о сгенерированном фрагменте", 
                                      font=header_font, bg=Constants.AdditionalColorInfo)
-        fragment_info_lbl.place(x=630, y=20)
+        fragment_info_lbl.place(x=630, y=25)
 
         training_data_lbl = tk.Label(self.root, text="Обучающий набор данных: ", 
                                           font=info_font, bg=Constants.AdditionalColorInfo)
-        training_data_lbl.place(x=460, y=60)
+        training_data_lbl.place(x=460, y=80)
 
         self.training_data_lbl_value = tk.Label(self.root, text="", 
                                           font=info_font, bg=Constants.AdditionalColorInfo)
-        self.training_data_lbl_value.place(x=650, y=60)
+        self.training_data_lbl_value.place(x=710, y=80)
 
         emotion_lbl = tk.Label(self.root, text="Эмоциональная окраска: ", 
                                           font=info_font, bg=Constants.AdditionalColorInfo)
-        emotion_lbl.place(x=460, y=100)
+        emotion_lbl.place(x=460, y=130)
 
         self.emotion_lbl_value = tk.Label(self.root, text="", 
                                           font=info_font, bg=Constants.AdditionalColorInfo)
-        self.emotion_lbl_value.place(x=650, y=100)
+        self.emotion_lbl_value.place(x=710, y=130)
+
+        duration_lbl = tk.Label(self.root, text="Длительность фрагмента в тактах: ", 
+                                          font=info_font, bg=Constants.AdditionalColorInfo)
+        duration_lbl.place(x=460, y=180)
+
+        self.duration_lbl_value = tk.Label(self.root, text="", 
+                                          font=info_font, bg=Constants.AdditionalColorInfo)
+        self.duration_lbl_value.place(x=710, y=180)
 
 
     '''def setup_demo(self):
@@ -233,14 +243,19 @@ class MainWindow:
         if LuscherTestHandler.LuscherTestDone:
             self.meta = self.input_handler.handle(self.luscher_test_handler.LuscherTestResult)
             if self.entry_duration.get() == "":
-                self.generated_fragment = self.generator.generate(self.meta)
+                self.dur = 100
+                self.generated_fragment = self.generator.generate(self.meta, length=self.dur)
             else:
-                self.dur = self.entry_duration.get()
-                self.generated_fragment = self.generator.generate(self.meta, length=int(self.dur))
+                self.dur = int(self.entry_duration.get()) * 4
+                self.generated_fragment = self.generator.generate(self.meta, length=self.dur)
 
             training_data = self.meta['color'] + " " + self.meta['lad']
             self.training_data_lbl_value['text'] = training_data
             self.emotion_lbl_value['text'] = Constants.TrainingDataToEmotionDict[training_data]
+
+            print(self.entry_duration.get())
+
+            self.duration_lbl_value['text'] = str(self.dur // 4)
 
             print("[meta] ", self.meta['color'], self.meta['lad'], self.meta['bpm'], self.luscher_test_handler.LuscherTestResult[7])
 
@@ -249,10 +264,9 @@ class MainWindow:
             showerror(title="Ошибка", message="Сначала пройдите тест Люшера!")
 
     def handle_play_generated_fragment(self):
-        tmp_filename = "/tmp/playing.mp3"
+        tmp_filename = Constants.WorkDir + "\\ui\\tmp\\" + "tmp_" + str(datetime.datetime.now()).split('.')[0].replace(':', '-') + ".mp3"
 
         if self.player is None:
-            os.remove(tmp_filename)
             self.transformer.midi_to_mp3(self.file, tmp_filename)
                       
             self.player = Player(tmp_filename)
@@ -261,8 +275,6 @@ class MainWindow:
             self.player.stop()
             self.player.join()
             self.player = None
-
-            os.remove(tmp_filename)
 
     def play_generated_fragment(self):
         if self.file is not None:
@@ -330,7 +342,8 @@ class MainWindow:
         self.root.mainloop()
 
     def exit(self):
+        if self.player:
+            self.player.stop()
+            self.player.join()
+
         self.root.destroy()
-
-
-

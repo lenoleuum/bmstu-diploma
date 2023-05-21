@@ -13,8 +13,10 @@ class Transformer:
         #fs.sfload("C:\\ProgramData\\soundfonts\\default.sf2")
         FluidSynth().midi_to_audio(file_in, self.tmp_file)
         wav_file = AudioSegment.from_wav(self.tmp_file)
-        wav_file.export(file_out, format="mp3")
+        r = wav_file.export(file_out, format="mp3")
         os.remove(self.tmp_file)
+
+        return r
 
     def play_mp3(self, filepath:str):
         sound = AudioSegment.from_mp3(filepath)

@@ -4,11 +4,13 @@ import shutil
 
 
 def main():
-    os.mkdir("/ui/tmp", mode=0o777)
     root = MainWindow()
     root.setup()
     root.run()
-    shutil.rmtree("/ui/tmp") 
+    
 
 if __name__ == '__main__':
+    shutil.rmtree("./ui/tmp") 
+    os.mkdir("./ui/tmp", mode=0o777)
     main()
+    
