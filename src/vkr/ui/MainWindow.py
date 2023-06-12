@@ -52,8 +52,15 @@ class MainWindow:
 
         self.generated_stream = None
 
-        # todo
-        self.demo_flg = False
+        self.demo_flg = True
+        self.demo_cnt = dict({'red minor': 1,
+                         'red major': 1,
+                         'yellow minor': 1,
+                         'yellow major': 1,
+                         'green minor': 1,
+                         'green major': 1,
+                         'blue minor': 1,
+                         'blue major': 1})
 
     def setup(self):
         self.root.title("ВКР")
@@ -200,16 +207,6 @@ class MainWindow:
                                           font=info_font, bg=Constants.AdditionalColorInfo)
         self.duration_lbl_value.place(x=710, y=180)
 
-
-    '''def setup_demo(self):
-        enabled = IntVar()
-  
-        enabled_checkbutton = ttk.Checkbutton(text="Включить", variable=enabled)
-        enabled_checkbutton.pack(padx=6, pady=6, anchor=NW)
-        
-        enabled_label = ttk.Label(textvariable=enabled)
-        enabled_label.pack(padx=6, pady=6, anchor=NW)'''
-
     def setup_menu(self):
         main_menu = tk.Menu()
         main_menu.add_cascade(label="О программе", command=lambda: self.show_info())
@@ -242,24 +239,29 @@ class MainWindow:
     def start_generation(self):
         if LuscherTestHandler.LuscherTestDone:
             self.meta = self.input_handler.handle(self.luscher_test_handler.LuscherTestResult)
+
             if self.entry_duration.get() == "":
                 self.dur = 100
-                self.generated_fragment = self.generator.generate(self.meta, length=self.dur)
             else:
                 self.dur = int(self.entry_duration.get()) * 4
-                self.generated_fragment = self.generator.generate(self.meta, length=self.dur)
-
+            
             training_data = self.meta['color'] + " " + self.meta['lad']
+            self.duration_lbl_value['text'] = str(self.dur // 4)
             self.training_data_lbl_value['text'] = training_data
             self.emotion_lbl_value['text'] = Constants.TrainingDataToEmotionDict[training_data]
 
-            print(self.entry_duration.get())
+            if self.demo_flg:
+                tgt_dir = Constants.WorkDir + "\\demo\\" + self.meta['color'] + "\\" + self.meta['lad']
+                self.file = tgt_dir + "\\" + str(self.demo_cnt[self.meta['color'] + " " + self.meta['lad']]) + ".mid"
+                self.demo_cnt[self.meta['color'] + " " + self.meta['lad']] += 1
 
-            self.duration_lbl_value['text'] = str(self.dur // 4)
+                print(self.file)
+            else:
+                self.generated_fragment = self.generator.generate(self.meta, length=self.dur)
 
-            print("[meta] ", self.meta['color'], self.meta['lad'], self.meta['bpm'], self.luscher_test_handler.LuscherTestResult[7])
+                print("[meta] ", self.meta['color'], self.meta['lad'], self.meta['bpm'], self.luscher_test_handler.LuscherTestResult[7])
 
-            self.file, self.generated_stream = self.converter.convert(self.generated_fragment, self.meta)
+                self.file, self.generated_stream = self.converter.convert(self.generated_fragment, self.meta)
         else:
             showerror(title="Ошибка", message="Сначала пройдите тест Люшера!")
 
@@ -299,18 +301,22 @@ class MainWindow:
     def download_generated_fragment(self):
         if self.file is not None:
             if self.fragment_format == "midi":
-                midi_filename = fd.asksaveasfile(initialdir=os.getcwd(), mode='w', filetypes=[("Midi Music file", "*.mid")], defaultextension=".mid")
+                midi_filename = fd.asksaveasfile(initialdir=os.getcwd(), mode='w', 
+                                                 filetypes=[("Midi Music file", "*.mid")], defaultextension=".mid")
+        
                 shutil.copy2(self.file, midi_filename.name)
 
             elif self.fragment_format == "mp3":
                 if self.normalize == 1:
                     tmp_filename = "tmp.mp3"
-                    mp3_filename = fd.asksaveasfile(initialdir=os.getcwd(), mode='w', filetypes=[("Mp3 Music file", "*.mp3")], defaultextension=".mp3")
+                    mp3_filename = fd.asksaveasfile(initialdir=os.getcwd(), mode='w', 
+                                                    filetypes=[("Mp3 Music file", "*.mp3")], defaultextension=".mp3")
                     self.transformer.midi_to_mp3(self.file, tmp_filename)
                     self.transformer.normalize(tmp_filename, mp3_filename.name)
                     os.remove(tmp_filename)
                 else:
-                    mp3_filename = fd.asksaveasfile(initialdir=os.getcwd(), mode='w', filetypes=[("Mp3 Music file", "*.mp3")], defaultextension=".mp3")
+                    mp3_filename = fd.asksaveasfile(initialdir=os.getcwd(), mode='w', 
+                                                    filetypes=[("Mp3 Music file", "*.mp3")], defaultextension=".mp3")
                     self.transformer.midi_to_mp3(self.file, mp3_filename.name)
         else:
             showerror(title="Ошибка", message="Вы еще не сгенерировали музыкальный фрагмент!")
